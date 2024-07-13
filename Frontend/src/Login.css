@@ -1,0 +1,27 @@
+/* Custom styles for the Login button */
+.login-button {
+    background: linear-gradient(90deg, #1f73b7 0%, #2a9df4 100%);
+  }
+  
+  .login-button.loading {
+    background-size: 200% 100%;
+    animation: loadingAnimation 2s linear infinite;
+  }
+  
+  .login-button.login-success {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    padding: 0;
+    justify-content: center;
+  }
+  
+  @keyframes loadingAnimation {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: -200% 0%;
+    }
+  }
+  
