@@ -63,8 +63,8 @@ const MyAccount = () => {
               </div>
             </div>
 
-            <div className="md:col-span-2 md:px-[30px]">
-              <div className="flex justify-center md:justify-evenly">
+            <div className="md:col-span-2 md:px-[30px] ">
+              <div className="flex justify-center md:justify-evenly mb-10">
                 <button
                   onClick={() => setTab("bookings")}
                   className={`${

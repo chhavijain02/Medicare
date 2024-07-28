@@ -55,6 +55,7 @@ const Login = () => {
       setLoginSuccess(true);
       toast.success(result.message);
       setTimeout(() => navigate("/home"), 1500);
+      setTimeout(()=>window.location.reload(),1500);
     } catch (err) {
       toast.error(err.message);
       setLoading(false);
@@ -120,3 +121,6 @@ const Login = () => {
 };
 
 export default Login;
+
+
+

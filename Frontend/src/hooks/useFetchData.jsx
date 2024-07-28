@@ -7,20 +7,44 @@ const useFetchData = (url) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // const fetchData = async () => {
+    //   setLoading(true);
+    //   try {
+    //     const res = await fetch(url, {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     });
+
+    //     const result = await res.json();
+
+    //     if (!res.ok) {
+    //       console.log(result.message);
+    //       throw new Error(result.message + '😞');
+    //     }
+
+    //     setData(result.data);
+    //   } catch (err) {
+    //     setError(err.message);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+
+    // if (url) {
+    //   fetchData();
+    // }
+
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         const result = await res.json();
-
+        console.log('Fetch result:', result);
         if (!res.ok) {
           console.log(result.message);
-          throw new Error(result.message + '😞');
+          throw new Error(result.message);
         }
-
         setData(result.data);
       } catch (err) {
         setError(err.message);
@@ -28,7 +52,7 @@ const useFetchData = (url) => {
         setLoading(false);
       }
     };
-
+  
     if (url) {
       fetchData();
     }

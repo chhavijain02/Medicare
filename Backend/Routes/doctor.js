@@ -16,6 +16,7 @@
 
 // export default router;
 
+
 import express from 'express';
 import { getAllDoctor, getSingleDoctor, updateDoctor, deleteDoctor, getDoctorProfile } from '../controllers/doctorController.js';
 import { authenticate, restrict } from '../auth/verifyToken.js';
@@ -33,4 +34,6 @@ router.delete('/:id', authenticate, restrict(['doctor']), deleteDoctor);
 router.get('/profile/me', authenticate, restrict(['doctor']), getDoctorProfile);
 
 export default router;
+
+
 

@@ -236,7 +236,7 @@ const Home = () => {
                   online scheduling tool to select an appointment time.
                 </li>
               </ul>
-              <Link to="/">
+              <Link to="/doctors">
                 <button className="btn">Learn More</button>
               </Link>
             </div>

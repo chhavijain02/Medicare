@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthContextProvider } from "./context/authContext.jsx";
-
+import { SocketProvider } from './context/SocketContext';
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -19,7 +19,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           closeOnClick
           pauseOnHover={false}
         />
+        <SocketProvider>
           <App />
+        </SocketProvider>
       </AuthContextProvider>
     </BrowserRouter>
   </React.StrictMode>

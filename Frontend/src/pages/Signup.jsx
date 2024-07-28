@@ -90,7 +90,7 @@ const Signup = () => {
       setLoading(false);
       setSignupSuccess(true);
       toast.success(message);
-      navigate("/login");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       toast.error(err.message);
       setLoading(false);

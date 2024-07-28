@@ -94,7 +94,7 @@ const Profile = ({ doctorData }) => {
   const handlePhoneChange = (e) => {
     const { name, value } = e.target;
     const phoneRegex = /^[0-9]{0,10}$/;
-  
+
     if (phoneRegex.test(value)) {
       setFormData({
         ...formData,
@@ -145,129 +145,131 @@ const Profile = ({ doctorData }) => {
     };
   };
 
-  const handleCropComplete = (croppedArea, croppedAreaPixels) => {
-    setCroppedArea(croppedAreaPixels);
-  };
+const handleCropComplete = (croppedArea, croppedAreaPixels) => {
+  setCroppedArea(croppedAreaPixels);
+};
 
-  const handleCropConfirm = async () => {
-    const croppedImage = await getCroppedImg(imageSrc, croppedArea);
-    setCroppedImage(croppedImage);
-    setFormData({ ...formData, photo: croppedImage });
-    setIsCropping(false);
-  };
+const handleCropConfirm = async () => {
+  const croppedImage = await getCroppedImg(imageSrc, croppedArea);
+  setCroppedImage(croppedImage);
+  setFormData({ ...formData, photo: croppedImage });
+  setIsCropping(false);
+};
 
-  const updateProfileHandler = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      let updatedFormData = { ...formData };
+const updateProfileHandler = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    let updatedFormData = { ...formData };
 
-      if (croppedImage) {
-        const data = await uploadImageToCloudinary(croppedImage);
-        updatedFormData.photo = data?.url;
-      }
-
-      const res = await fetch(`${BASE_URL}/doctors/${doctorData._id}`, {
-        method: "PUT",
-        headers: {
-          "content-type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updatedFormData),
-      });
-
-      const result = await res.json();
-      if (!res.ok) {
-        throw Error(result.message);
-      }
-
-      setLoading(false);
-      setProfileUpdateSuccess(true);
-      toast.success(result.message);
-    } catch (err) {
-      setLoading(false);
-      toast.error(err.message);
+    if (croppedImage) {
+      const data = await uploadImageToCloudinary(croppedImage);
+      updatedFormData.photo = data?.url;
     }
-  };
 
-  // function for adding item
-  const addItem = (key, item) => {
-    setFormData((prevFormData) => ({
+    const res = await fetch(`${BASE_URL}/doctors/${doctorData._id}`, {
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updatedFormData),
+    });
+
+    const result = await res.json();
+    if (!res.ok) {
+      throw Error(result.message);
+    }
+
+    setLoading(false);
+    setProfileUpdateSuccess(true);
+    toast.success(result.message);
+    setTimeout(() => navigate("/doctors/profile/me"), 1500);
+    setTimeout(()=>window.location.reload(),1500);
+  } catch (err) {
+    setLoading(false);
+    toast.error(err.message);
+  }
+};
+
+// function for adding item
+const addItem = (key, item) => {
+  setFormData((prevFormData) => ({
+    ...prevFormData,
+    [key]: [...prevFormData[key], item],
+  }));
+};
+
+// input change function
+const handleReusableInputChangeFunc = (key, index, event) => {
+  const { name, value } = event.target;
+  setFormData((prevFormData) => {
+    const updateItems = [...prevFormData[key]];
+    updateItems[index][name] = value;
+
+    return {
       ...prevFormData,
-      [key]: [...prevFormData[key], item],
-    }));
-  };
+      [key]: updateItems,
+    };
+  });
+};
 
-  // input change function
-  const handleReusableInputChangeFunc = (key, index, event) => {
-    const { name, value } = event.target;
-    setFormData((prevFormData) => {
-      const updateItems = [...prevFormData[key]];
-      updateItems[index][name] = value;
+// function for deleting item
+const deleteItem = (key, index) => {
+  setFormData((prevFormData) => ({
+    ...prevFormData,
+    [key]: prevFormData[key].filter((_, i) => i !== index),
+  }));
+};
 
-      return {
-        ...prevFormData,
-        [key]: updateItems,
-      };
-    });
-  };
+//Qualification Update
+const addQualification = (e) => {
+  e.preventDefault();
 
-  // function for deleting item
-  const deleteItem = (key, index) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [key]: prevFormData[key].filter((_, i) => i !== index),
-    }));
-  };
+  addItem("qualifications", {
+    startingDate: "",
+    endingDate: "",
+    degree: "",
+    university: "",
+  });
+};
+const handleQualificationChange = (event, index) => {
+  handleReusableInputChangeFunc("qualifications", index, event);
+};
+const deleteQualification = (e, index) => {
+  e.preventDefault();
+  deleteItem("qualifications", index);
+};
 
-  //Qualification Update
-  const addQualification = (e) => {
-    e.preventDefault();
+//Experience Update
+const addExperience = (e) => {
+  e.preventDefault();
 
-    addItem("qualifications", {
-      startingDate: "",
-      endingDate: "",
-      degree: "",
-      university: "",
-    });
-  };
-  const handleQualificationChange = (event, index) => {
-    handleReusableInputChangeFunc("qualifications", index, event);
-  };
-  const deleteQualification = (e, index) => {
-    e.preventDefault();
-    deleteItem("qualifications", index);
-  };
-
-  //Experience Update
-  const addExperience = (e) => {
-    e.preventDefault();
-
-    addItem("experiences", {
-      startingDate: "",
-      endingDate: "",
-      position: "",
-      hospital: "",
-    });
-  };
-  const handleExperienceChange = (event, index) => {
-    handleReusableInputChangeFunc("experiences", index, event);
-  };
-  const deleteExperience = (e, index) => {
-    e.preventDefault();
-    deleteItem("experiences", index);
-  };
+  addItem("experiences", {
+    startingDate: "",
+    endingDate: "",
+    position: "",
+    hospital: "",
+  });
+};
+const handleExperienceChange = (event, index) => {
+  handleReusableInputChangeFunc("experiences", index, event);
+};
+const deleteExperience = (e, index) => {
+  e.preventDefault();
+  deleteItem("experiences", index);
+};
 
   //TimeSlot Update
-  const addTimeSlot = (e) => {
-    e.preventDefault();
+const addTimeSlot = (e) => {
+  e.preventDefault();
 
-    addItem("timeSlots", {
-      day: "",
-      startingTime: "",
-      endingTime: "",
-    });
-  };
+  addItem("timeSlots", {
+    day: "",
+    startingTime: "",
+    endingTime: "",
+  });
+};
   const handleTimeSlotChange = (event, index) => {
     handleReusableInputChangeFunc("timeSlots", index, event);
   };
@@ -283,288 +285,288 @@ const Profile = ({ doctorData }) => {
       </h2>
 
       <form>
-        {/*---------Name Input----------- */}
-        <div className="mb-5">
-          <p className="form__label">Name*</p>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            placeholder="Full Name"
-            className="form__input"
-          />
-        </div>
+{/*---------Name Input----------- */}
+<div className="mb-5">
+  <p className="form__label">Name*</p>
+  <input
+    type="text"
+    name="name"
+    value={formData.name}
+    onChange={handleInputChange}
+    placeholder="Full Name"
+    className="form__input"
+  />
+</div>
 
-        {/*--------- Email Input ----------- */}
-        <div className="mb-5">
-          <p className="form__label">Email Address*</p>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Email"
-            className="form__input"
-            readOnly
-            aria-readonly
-            disabled
-          />
-        </div>
+{/*--------- Email Input ----------- */}
+<div className="mb-5">
+  <p className="form__label">Email Address*</p>
+  <input
+    type="email"
+    name="email"
+    value={formData.email}
+    onChange={handleInputChange}
+    placeholder="Email"
+    className="form__input"
+    readOnly
+    aria-readonly
+    disabled
+  />
+</div>
 
-        {/*--------- Phone number Input ----------- */}
-        <div className="mb-5">
-          <p className="form__label">Phone*</p>
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handlePhoneChange}
-            placeholder="Phone number"
-            className="form__input"
-            maxLength="10"
-          />
-        </div>
+{/*--------- Phone number Input ----------- */}
+<div className="mb-5">
+  <p className="form__label">Phone*</p>
+  <input
+    type="text"
+    name="phone"
+    value={formData.phone}
+    onChange={handlePhoneChange}
+    placeholder="Phone number"
+    className="form__input"
+    maxLength="10"
+  />
+</div>
 
-        {/*--------- This is for the Bio Input ----------- */}
-        <div className="mb-5">
-          <p className="form__label">Bio*</p>
-          <input
-            type="text"
-            name="bio"
-            value={formData.bio}
-            onChange={handleInputChange}
-            placeholder="Bio"
-            className="form__input"
-            maxLength={100}
-          />
-        </div>
+{/*--------- This is for the Bio Input ----------- */}
+<div className="mb-5">
+  <p className="form__label">Bio*</p>
+  <input
+    type="text"
+    name="bio"
+    value={formData.bio}
+    onChange={handleInputChange}
+    placeholder="Bio"
+    className="form__input"
+    maxLength={100}
+  />
+</div>
 
-        {/*--------- This is for the Gender, Specialization & Ticket Price Input ----------- */}
-        <div className="mb-5">
-          <div className="grid grid-cols-3 gap-5 mb-[30px]">
-            {/*--------- This is for the Gender Input ----------- */}
-            <div>
-              <p className="form__label">Gender*</p>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleInputChange}
-                className="form__input py-3.5"
-              >
-                <option value="">Select</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            {/*--------- This is for the Specialization Input ----------- */}
-            <div>
-              <p className="form__label">Specialization*</p>
-              <select
-                name="specialization"
-                value={formData.specialization}
-                onChange={handleInputChange}
-                className="form__input py-3.5"
-              >
-                <option value="">Select</option>
-                <option value="Surgeon">Surgeon</option>
-                <option value="Neurologist">Neurologist</option>
-                <option value="Dermatologist">Dermatologist</option>
-                <option value="Gynecologist">Gynecologist</option>
-                <option value="Psychiatrist">Psychiatrist</option>
-                <option value="Physician">Physician</option>
-                <option value="Dentist">Dentist</option>
-                <option value="Nephrologist">Nephrologist</option>
-                <option value="Cardiologist">Cardiologist</option>
-                <option value="Hematologist">Hematologist</option>
-                <option value="Pediatrician">Pediatrician</option>
-                <option value="Allergists">Allergists</option>
-                <option value="Oncologist">Oncologist</option>
-                <option value="Orthopaedist">Orthopaedist</option>
-              </select>
-            </div>
-            {/*--------- This is for the Ticket Price Input ----------- */}
-            <div>
-              <p className="form__label">Ticket Price*</p>
-              <input
-                type="number"
-                name="ticketPrice"
-                value={formData.ticketPrice}
-                onChange={handleInputChange}
-                placeholder="Ticket Price"
-                className="form__input"
-              />
-            </div>
-          </div>
-        </div>
+{/*--------- This is for the Gender, Specialization & Ticket Price Input ----------- */}
+<div className="mb-5">
+  <div className="grid grid-cols-3 gap-5 mb-[30px]">
+    {/*--------- This is for the Gender Input ----------- */}
+    <div>
+      <p className="form__label">Gender*</p>
+      <select
+        name="gender"
+        value={formData.gender}
+        onChange={handleInputChange}
+        className="form__input py-3.5"
+      >
+        <option value="">Select</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    {/*--------- This is for the Specialization Input ----------- */}
+    <div>
+      <p className="form__label">Specialization*</p>
+      <select
+        name="specialization"
+        value={formData.specialization}
+        onChange={handleInputChange}
+        className="form__input py-3.5"
+      >
+        <option value="">Select</option>
+        <option value="Surgeon">Surgeon</option>
+        <option value="Neurologist">Neurologist</option>
+        <option value="Dermatologist">Dermatologist</option>
+        <option value="Gynecologist">Gynecologist</option>
+        <option value="Psychiatrist">Psychiatrist</option>
+        <option value="Physician">Physician</option>
+        <option value="Dentist">Dentist</option>
+        <option value="Nephrologist">Nephrologist</option>
+        <option value="Cardiologist">Cardiologist</option>
+        <option value="Hematologist">Hematologist</option>
+        <option value="Pediatrician">Pediatrician</option>
+        <option value="Allergists">Allergists</option>
+        <option value="Oncologist">Oncologist</option>
+        <option value="Orthopaedist">Orthopaedist</option>
+      </select>
+    </div>
+    {/*--------- This is for the Ticket Price Input ----------- */}
+    <div>
+      <p className="form__label">Ticket Price*</p>
+      <input
+        type="number"
+        name="ticketPrice"
+        value={formData.ticketPrice}
+        onChange={handleInputChange}
+        placeholder="Ticket Price"
+        className="form__input"
+      />
+    </div>
+  </div>
+</div>
 
-        {/*--------- This is for the Qualifications Input ----------- */}
-        <div className="mb-5">
-          <p className="form__label">Qualifications*</p>
-          {formData.qualifications.map((qualification, index) => (
-            <div
-              key={index}
-              className="mb-4 grid grid-cols-5 gap-5 items-center"
-            >
-              <input
-                type="text"
-                name="degree"
-                value={qualification.degree}
-                onChange={(event) => handleQualificationChange(event, index)}
-                placeholder="Degree"
-                className="form__input"
-              />
-              <input
-                type="text"
-                name="university"
-                value={qualification.university}
-                onChange={(event) => handleQualificationChange(event, index)}
-                placeholder="University"
-                className="form__input"
-              />
-              <input
-                type="date"
-                name="startingDate"
-                value={qualification.startingDate}
-                onChange={(event) => handleQualificationChange(event, index)}
-                placeholder="Starting Date"
-                className="form__input"
-              />
-              <input
-                type="date"
-                name="endingDate"
-                value={qualification.endingDate}
-                onChange={(event) => handleQualificationChange(event, index)}
-                placeholder="Ending Date"
-                className="form__input"
-              />
-              <button
-                className="py-2 px-4 rounded-md text-white bg-red-500 hover:bg-red-600"
-                onClick={(e) => deleteQualification(e, index)}
-              >
-                Delete
-              </button>
-            </div>
-          ))}
-          <button
-            className="py-2 px-4 rounded-md text-white bg-blue-500 hover:bg-blue-600"
-            onClick={addQualification}
-          >
-            Add Qualification
-          </button>
-        </div>
+{/*--------- This is for the Qualifications Input ----------- */}
+<div className="mb-5">
+  <p className="form__label">Qualifications*</p>
+  {formData.qualifications.map((qualification, index) => (
+    <div
+      key={index}
+      className="mb-4 grid grid-cols-5 gap-5 items-center"
+    >
+      <input
+        type="text"
+        name="degree"
+        value={qualification.degree}
+        onChange={(event) => handleQualificationChange(event, index)}
+        placeholder="Degree"
+        className="form__input"
+      />
+      <input
+        type="text"
+        name="university"
+        value={qualification.university}
+        onChange={(event) => handleQualificationChange(event, index)}
+        placeholder="University"
+        className="form__input"
+      />
+      <input
+        type="date"
+        name="startingDate"
+        value={qualification.startingDate}
+        onChange={(event) => handleQualificationChange(event, index)}
+        placeholder="Starting Date"
+        className="form__input"
+      />
+      <input
+        type="date"
+        name="endingDate"
+        value={qualification.endingDate}
+        onChange={(event) => handleQualificationChange(event, index)}
+        placeholder="Ending Date"
+        className="form__input"
+      />
+      <button
+        className="py-2 px-4 rounded-md text-white bg-red-500 hover:bg-red-600"
+        onClick={(e) => deleteQualification(e, index)}
+      >
+        Delete
+      </button>
+    </div>
+  ))}
+  <button
+    className="py-2 px-4 rounded-md text-white bg-blue-500 hover:bg-blue-600"
+    onClick={addQualification}
+  >
+    Add Qualification
+  </button>
+</div>
 
-        {/*--------- This is for the Experience Input ----------- */}
-        <div className="mb-5">
-          <p className="form__label">Experience*</p>
-          {formData.experiences.map((experience, index) => (
-            <div
-              key={index}
-              className="mb-4 grid grid-cols-5 gap-5 items-center"
-            >
-              <input
-                type="text"
-                name="position"
-                value={experience.position}
-                onChange={(event) => handleExperienceChange(event, index)}
-                placeholder="Position"
-                className="form__input"
-              />
-              <input
-                type="text"
-                name="hospital"
-                value={experience.hospital}
-                onChange={(event) => handleExperienceChange(event, index)}
-                placeholder="Hospital"
-                className="form__input"
-              />
-              <input
-                type="date"
-                name="startingDate"
-                value={experience.startingDate}
-                onChange={(event) => handleExperienceChange(event, index)}
-                placeholder="Starting Date"
-                className="form__input"
-              />
-              <input
-                type="date"
-                name="endingDate"
-                value={experience.endingDate}
-                onChange={(event) => handleExperienceChange(event, index)}
-                placeholder="Ending Date"
-                className="form__input"
-              />
-              <button
-                className="py-2 px-4 rounded-md text-white bg-red-500 hover:bg-red-600"
-                onClick={(e) => deleteExperience(e, index)}
-              >
-                Delete
-              </button>
-            </div>
-          ))}
-          <button
-            className="py-2 px-4 rounded-md text-white bg-blue-500 hover:bg-blue-600"
-            onClick={addExperience}
-          >
-            Add Experience
-          </button>
-        </div>
+{/*--------- This is for the Experience Input ----------- */}
+<div className="mb-5">
+  <p className="form__label">Experience*</p>
+  {formData.experiences.map((experience, index) => (
+    <div
+      key={index}
+      className="mb-4 grid grid-cols-5 gap-5 items-center"
+    >
+      <input
+        type="text"
+        name="position"
+        value={experience.position}
+        onChange={(event) => handleExperienceChange(event, index)}
+        placeholder="Position"
+        className="form__input"
+      />
+      <input
+        type="text"
+        name="hospital"
+        value={experience.hospital}
+        onChange={(event) => handleExperienceChange(event, index)}
+        placeholder="Hospital"
+        className="form__input"
+      />
+      <input
+        type="date"
+        name="startingDate"
+        value={experience.startingDate}
+        onChange={(event) => handleExperienceChange(event, index)}
+        placeholder="Starting Date"
+        className="form__input"
+      />
+      <input
+        type="date"
+        name="endingDate"
+        value={experience.endingDate}
+        onChange={(event) => handleExperienceChange(event, index)}
+        placeholder="Ending Date"
+        className="form__input"
+      />
+      <button
+        className="py-2 px-4 rounded-md text-white bg-red-500 hover:bg-red-600"
+        onClick={(e) => deleteExperience(e, index)}
+      >
+        Delete
+      </button>
+    </div>
+  ))}
+  <button
+    className="py-2 px-4 rounded-md text-white bg-blue-500 hover:bg-blue-600"
+    onClick={addExperience}
+  >
+    Add Experience
+  </button>
+</div>
 
-        {/*--------- This is for the Time Slot Input ----------- */}
-        <div className="mb-5">
-          <p className="form__label">Time Slots*</p>
-          {formData.timeSlots.map((timeSlot, index) => (
-            <div
-              key={index}
-              className="mb-4 grid grid-cols-5 gap-5 items-center"
-            >
-              <select
-                name="day"
-                value={timeSlot.day}
-                onChange={(event) => handleTimeSlotChange(event, index)}
-                className="form__input py-3.5"
-              >
-                <option value="">Select Day</option>
-                <option value="monday">Monday</option>
-                <option value="tuesday">Tuesday</option>
-                <option value="wednesday">Wednesday</option>
-                <option value="thursday">Thursday</option>
-                <option value="friday">Friday</option>
-                <option value="saturday">Saturday</option>
-                <option value="sunday">Sunday</option>
-              </select>
-              <input
-                type="time"
-                name="startingTime"
-                value={timeSlot.startingTime}
-                onChange={(event) => handleTimeSlotChange(event, index)}
-                placeholder="Starting Time"
-                className="form__input"
-              />
-              <input
-                type="time"
-                name="endingTime"
-                value={timeSlot.endingTime}
-                onChange={(event) => handleTimeSlotChange(event, index)}
-                placeholder="Ending Time"
-                className="form__input"
-              />
-              <button
-                className="py-2 px-4 rounded-md text-white bg-red-500 hover:bg-red-600"
-                onClick={(e) => deleteTimeSlot(e, index)}
-              >
-                Delete
-              </button>
-            </div>
-          ))}
-          <button
-            className="py-2 px-4 rounded-md text-white bg-blue-500 hover:bg-blue-600"
-            onClick={addTimeSlot}
-          >
-            Add Time Slot
-          </button>
-        </div>
+{/*--------- This is for the Time Slot Input ----------- */}
+<div className="mb-5">
+  <p className="form__label">Time Slots*</p>
+  {formData.timeSlots.map((timeSlot, index) => (
+    <div
+      key={index}
+      className="mb-4 grid grid-cols-5 gap-5 items-center"
+    >
+      <select
+        name="day"
+        value={timeSlot.day}
+        onChange={(event) => handleTimeSlotChange(event, index)}
+        className="form__input py-3.5"
+      >
+        <option value="">Select Day</option>
+        <option value="monday">Monday</option>
+        <option value="tuesday">Tuesday</option>
+        <option value="wednesday">Wednesday</option>
+        <option value="thursday">Thursday</option>
+        <option value="friday">Friday</option>
+        <option value="saturday">Saturday</option>
+        <option value="sunday">Sunday</option>
+      </select>
+      <input
+        type="time"
+        name="startingTime"
+        value={timeSlot.startingTime}
+        onChange={(event) => handleTimeSlotChange(event, index)}
+        placeholder="Starting Time"
+        className="form__input"
+      />
+      <input
+        type="time"
+        name="endingTime"
+        value={timeSlot.endingTime}
+        onChange={(event) => handleTimeSlotChange(event, index)}
+        placeholder="Ending Time"
+        className="form__input"
+      />
+      <button
+        className="py-2 px-4 rounded-md text-white bg-red-500 hover:bg-red-600"
+        onClick={(e) => deleteTimeSlot(e, index)}
+      >
+        Delete
+      </button>
+    </div>
+  ))}
+  <button
+    className="py-2 px-4 rounded-md text-white bg-blue-500 hover:bg-blue-600"
+    onClick={addTimeSlot}
+  >
+    Add Time Slot
+  </button>
+</div>
 
         {/* Address Field */}
         <div className="mb-5">
@@ -704,6 +706,643 @@ const Profile = ({ doctorData }) => {
 };
 
 export default Profile;
+
+//Yeh code thoda shi kam kr rha h lekin isko pending me chhod rhi hu baki isse timeSlots array bn rhi h bss database me jake store nhi hori to vo krna pdega lekin vo badme krugi or usi ke hisab se sidepanel wale code me bhi changes krne h
+
+// import { useEffect, useState } from "react";
+// import Cropper from "react-easy-crop";
+// import getCroppedImg from "../../utils/cropImage";
+// import uploadImageToCloudinary from "../../utils/uploadCloudinary";
+// import { BASE_URL, token } from "../../config";
+// import { toast } from "react-toastify";
+// import { IconButton } from "@mui/material";
+// import { MdDelete } from "react-icons/md";
+// import { FaCheckCircle } from "react-icons/fa";
+// import {
+//   CitySelect,
+//   CountrySelect,
+//   StateSelect,
+// } from "react-country-state-city";
+// import "react-country-state-city/dist/react-country-state-city.css";
+
+// const Profile = ({ doctorData }) => {
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     email: "",
+//     phone: "",
+//     bio: "",
+//     gender: "",
+//     specialization: "",
+//     ticketPrice: 0,
+//     qualifications: [],
+//     experiences: [],
+//     timeSlots: [],
+//     about: "",
+//     photo: null,
+//     address: {
+//       line1: "",
+//       line2: "",
+//       city: "",
+//       state: "",
+//       country: "",
+//       pincode: "",
+//     },
+//   });
+
+//   const [imageSrc, setImageSrc] = useState(null);
+//   const [croppedImage, setCroppedImage] = useState(null);
+//   const [crop, setCrop] = useState({ x: 0, y: 0 });
+//   const [zoom, setZoom] = useState(1);
+//   const [profileUpdateSuccess, setProfileUpdateSuccess] = useState(false);
+//   const [croppedArea, setCroppedArea] = useState(null);
+//   const [isCropping, setIsCropping] = useState(false);
+//   const [loading, setLoading] = useState(false);
+
+//   useEffect(() => {
+//     if (doctorData) {
+//       setFormData({
+//         name: doctorData?.name || "",
+//         email: doctorData?.email || "",
+//         phone: doctorData?.phone || "",
+//         bio: doctorData?.bio || "",
+//         gender: doctorData?.gender || "",
+//         specialization: doctorData?.specialization || "",
+//         ticketPrice: doctorData?.ticketPrice || 0,
+//         qualifications: doctorData?.qualifications || [],
+//         experiences: doctorData?.experiences || [],
+//         timeSlots: doctorData?.timeSlots || [],
+//         about: doctorData?.about || "",
+//         photo: doctorData?.photo || null,
+//         address: {
+//           line1: doctorData?.address?.line1 || "",
+//           line2: doctorData?.address?.line2 || "",
+//           city: doctorData?.address?.city || "",
+//           state: doctorData?.address?.state || "",
+//           country: doctorData?.address?.country || "",
+//           pincode: doctorData?.address?.pincode || "",
+//         },
+//       });
+//     }
+//   }, [doctorData]);
+
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     if (name.startsWith("address.")) {
+//       const addressField = name.split(".")[1];
+//       setFormData((prevData) => ({
+//         ...prevData,
+//         address: {
+//           ...prevData.address,
+//           [addressField]: value,
+//         },
+//       }));
+//     } else {
+//       setFormData((prevData) => ({
+//         ...prevData,
+//         [name]: value,
+//       }));
+//     }
+//   };
+
+//   const handlePhoneChange = (e) => {
+//     const { name, value } = e.target;
+//     const phoneRegex = /^[0-9]{0,10}$/;
+//     if (phoneRegex.test(value) || value === "") {
+//       setFormData((prevData) => ({
+//         ...prevData,
+//         [name]: value,
+//       }));
+//     }
+//   };
+
+//   // Address Update
+//   const handleCountryChange = (country) => {
+//     setFormData((prevData) => ({
+//       ...prevData,
+//       address: {
+//         ...prevData.address,
+//         country: country.name,
+//         state: "",
+//         city: "",
+//       },
+//     }));
+//   };
+
+//   const handleStateChange = (state) => {
+//     setFormData((prevData) => ({
+//       ...prevData,
+//       address: {
+//         ...prevData.address,
+//         state: state.name,
+//         city: "",
+//       },
+//     }));
+//   };
+
+//   const handleCityChange = (city) => {
+//     setFormData((prevData) => ({
+//       ...prevData,
+//       address: {
+//         ...prevData.address,
+//         city: city.name,
+//       },
+//     }));
+//   };
+
+//   // Photo Update
+//   const handleFileInputChange = async (event) => {
+//     const file = event.target.files[0];
+//     const reader = new FileReader();
+//     reader.readAsDataURL(file);
+//     reader.onloadend = () => {
+//       setImageSrc(reader.result);
+//       setIsCropping(true);
+//     };
+//   };
+
+//   const handleCropComplete = (croppedArea, croppedAreaPixels) => {
+//     setCroppedArea(croppedAreaPixels);
+//   };
+
+//   const handleCropConfirm = async () => {
+//     try {
+//       const croppedImage = await getCroppedImg(imageSrc, croppedArea);
+//       setCroppedImage(croppedImage);
+//       setFormData((prevData) => ({
+//         ...prevData,
+//         photo: croppedImage,
+//       }));
+//     } catch (error) {
+//       console.error("Error cropping image:", error);
+//     } finally {
+//       setIsCropping(false);
+//     }
+//   };
+
+//   const updateProfileHandler = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+//     try {
+//       let updatedFormData = { ...formData };
+
+//       if (croppedImage) {
+//         const data = await uploadImageToCloudinary(croppedImage);
+//         updatedFormData.photo = data?.url;
+//       }
+
+//       const res = await fetch(`${BASE_URL}/doctors/${doctorData._id}`, {
+//         method: "PUT",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify(updatedFormData),
+//       });
+
+//       if (!res.ok) {
+//         throw new Error("Failed to update profile");
+//       }
+
+//       const result = await res.json();
+//       setLoading(false);
+//       setProfileUpdateSuccess(true);
+//       toast.success(result.message);
+//       setTimeout(() => {
+//         window.location.reload(); // Reload the page to reflect changes
+//       }, 1500);
+//     } catch (err) {
+//       setLoading(false);
+//       toast.error(err.message || "Failed to update profile");
+//     }
+//   };
+
+//   // function for adding item
+//   const addItem = (key, item) => {
+//     setFormData((prevFormData) => ({
+//       ...prevFormData,
+//       [key]: [...prevFormData[key], item],
+//     }));
+//   };
+
+//   // input change function
+//   const handleReusableInputChangeFunc = (key, index, event) => {
+//     const { name, value } = event.target;
+//     setFormData((prevFormData) => {
+//       const updateItems = [...prevFormData[key]];
+//       updateItems[index][name] = value;
+
+//       return {
+//         ...prevFormData,
+//         [key]: updateItems,
+//       };
+//     });
+//   };
+
+//   // function for deleting item
+//   const deleteItem = (key, index) => {
+//     setFormData((prevFormData) => ({
+//       ...prevFormData,
+//       [key]: prevFormData[key].filter((_, i) => i !== index),
+//     }));
+//   };
+
+//   //Qualification Update
+//   const addQualification = (e) => {
+//     e.preventDefault();
+
+//     addItem("qualifications", {
+//       startingDate: "",
+//       endingDate: "",
+//       degree: "",
+//       university: "",
+//     });
+//   };
+//   const handleQualificationChange = (event, index) => {
+//     handleReusableInputChangeFunc("qualifications", index, event);
+//   };
+//   const deleteQualification = (e, index) => {
+//     e.preventDefault();
+//     deleteItem("qualifications", index);
+//   };
+
+//   //Experience Update
+//   const addExperience = (e) => {
+//     e.preventDefault();
+
+//     addItem("experiences", {
+//       startingDate: "",
+//       endingDate: "",
+//       position: "",
+//       hospital: "",
+//     });
+//   };
+//   const handleExperienceChange = (event, index) => {
+//     handleReusableInputChangeFunc("experiences", index, event);
+//   };
+//   const deleteExperience = (e, index) => {
+//     e.preventDefault();
+//     deleteItem("experiences", index);
+//   };
+
+//   // Time Slot Update
+//   const generateTimeSlots = (startingTime, endingTime) => {
+//     console.log("time:",startingTime,"-",endingTime);
+//     console.log("in generateTimeSlot");
+//     const startTime = new Date(`01/01/2000 ${startingTime}`);
+//     const endTime = new Date(`01/01/2000 ${endingTime}`);
+//     console.log()
+//     const timeSlots = [];
+
+//     while (startTime <= endTime) {
+//       timeSlots.push(startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+//       startTime.setMinutes(startTime.getMinutes() + 30);
+//     }
+//     console.log("TimeSlot:",timeSlots);
+//     return timeSlots;
+//   };
+
+//   const addTimeSlot = (e) => {
+//     console.log("in addTimeSlot");
+//     e.preventDefault();
+//     setFormData((prevData) => ({
+//       ...prevData,
+//       timeSlots: [
+//         ...prevData.timeSlots,
+//         {
+//           day: "",
+//           startingTime: "",
+//           endingTime: "",
+//           slots: [],
+//         },
+//       ],
+//     }));
+//   };
+
+//   const deleteTimeSlot = (index) => {
+//     console.log("in deleteTimeSlot");
+//     setFormData((prevData) => ({
+//       ...prevData,
+//       timeSlots: prevData.timeSlots.filter((_, idx) => idx !== index),
+//     }));
+//   };
+
+//   const handleTimeSlotChange = (event, index) => {
+//     console.log("in handleTimeSlot");
+//     const { name, value } = event.target;
+//     setFormData((prevData) => ({
+//       ...prevData,
+//       timeSlots: prevData.timeSlots.map((slot, idx) =>
+//         idx === index ? { ...slot, [name]: value } : slot
+//       ),
+//     }));
+//   };
+
+//   const renderTimeSlots = () =>
+//     formData.timeSlots.map((slot, index) => (
+//       <div key={index}>
+//         <label>Day:</label>
+//         <input
+//           type="text"
+//           name={`timeSlots.${index}.day`}
+//           value={slot.day}
+//           onChange={(e) => handleTimeSlotChange(e, index)}
+//         />
+//         <label>Starting Time:</label>
+//         <input
+//           type="time"
+//           name={`timeSlots.${index}.startingTime`}
+//           value={slot.startingTime}
+//           onChange={(e) => handleTimeSlotChange(e, index)}
+//         />
+//         <label>Ending Time:</label>
+//         <input
+//           type="time"
+//           name={`timeSlots.${index}.endingTime`}
+//           value={slot.endingTime}
+//           onChange={(e) => handleTimeSlotChange(e, index)}
+//         />
+//         {slot.startingTime && slot.endingTime && (
+//           <div>
+//             <label>Available Time Slots:</label>
+//             <ul>
+//               {generateTimeSlots(slot.startingTime, slot.endingTime).map(
+//                 (time, idx) => (
+//                   <li key={idx}>{time}</li>
+//                 )
+//               )}
+//             </ul>
+//           </div>
+//         )}
+//         <IconButton onClick={() => deleteTimeSlot(index)}>
+//           <MdDelete />
+//         </IconButton>
+//       </div>
+//     ));
+
+//   return (
+//     <div className="profile">
+//       <form onSubmit={updateProfileHandler}>
+//         <div className="profile__form">
+//           {/* Profile Photo */}
+//           <div className="profile__photo">
+//             <label htmlFor="photo">Profile Photo:</label>
+//             {isCropping ? (
+//               <div className="crop-container">
+//                 <Cropper
+//                   image={imageSrc}
+//                   crop={crop}
+//                   zoom={zoom}
+//                   aspect={1}
+//                   onCropChange={setCrop}
+//                   onCropComplete={handleCropComplete}
+//                   onZoomChange={setZoom}
+//                 />
+//                 <div className="controls">
+//                   <button onClick={handleCropConfirm}>Confirm</button>
+//                 </div>
+//               </div>
+//             ) : (
+//               <>
+//                 {formData.photo ? (
+//                   <img src={formData.photo} alt="Profile" />
+//                 ) : (
+//                   <div className="no-photo">No photo uploaded</div>
+//                 )}
+//                 <input
+//                   type="file"
+//                   name="photo"
+//                   id="photo"
+//                   accept="image/*"
+//                   onChange={handleFileInputChange}
+//                 />
+//               </>
+//             )}
+//           </div>
+
+//           {/* Basic Info */}
+//           <div className="profile__basic">
+//             <label htmlFor="name">Name:</label>
+//             <input
+//               type="text"
+//               id="name"
+//               name="name"
+//               value={formData.name}
+//               onChange={handleInputChange}
+//               required
+//             />
+
+//             <label htmlFor="email">Email:</label>
+//             <input
+//               type="email"
+//               id="email"
+//               name="email"
+//               value={formData.email}
+//               onChange={handleInputChange}
+//               required
+//             />
+
+//             <label htmlFor="phone">Phone:</label>
+//             <input
+//               type="tel"
+//               id="phone"
+//               name="phone"
+//               value={formData.phone}
+//               onChange={handlePhoneChange}
+//               required
+//             />
+
+//             <label htmlFor="gender">Gender:</label>
+//             <select
+//               id="gender"
+//               name="gender"
+//               value={formData.gender}
+//               onChange={handleInputChange}
+//               required
+//             >
+//               <option value="">Select</option>
+//               <option value="male">Male</option>
+//               <option value="female">Female</option>
+//               <option value="other">Other</option>
+//             </select>
+
+//             <label htmlFor="specialization">Specialization:</label>
+//             <input
+//               type="text"
+//               id="specialization"
+//               name="specialization"
+//               value={formData.specialization}
+//               onChange={handleInputChange}
+//               required
+//             />
+
+//             <label htmlFor="ticketPrice">Ticket Price:</label>
+//             <input
+//               type="number"
+//               id="ticketPrice"
+//               name="ticketPrice"
+//               value={formData.ticketPrice}
+//               onChange={handleInputChange}
+//               required
+//             />
+//           </div>
+
+//           {/* Qualifications */}
+//           <div className="profile__qualifications">
+//             <label>Qualifications:</label>
+//             {formData.qualifications.map((qualification, index) => (
+//               <div key={index}>
+//                 <input
+//                   type="text"
+//                   value={qualification}
+//                   onChange={(e) =>
+//                     handleQualificationChange(e, index)
+//                   }
+//                   required
+//                 />
+//                 <IconButton
+//                   onClick={() => removeQualification(index)}
+//                 >
+//                   <MdDelete />
+//                 </IconButton>
+//               </div>
+//             ))}
+//             <button type="button" onClick={addQualification}>
+//               Add Qualification
+//             </button>
+//           </div>
+
+//           {/* Experiences */}
+//           <div className="profile__experiences">
+//             <label>Experiences:</label>
+//             {formData.experiences.map((experience, index) => (
+//               <div key={index}>
+//                 <input
+//                   type="text"
+//                   value={experience}
+//                   onChange={(e) => handleExperienceChange(e, index)}
+//                   required
+//                 />
+//                 <IconButton
+//                   onClick={() => removeExperience(index)}
+//                 >
+//                   <MdDelete />
+//                 </IconButton>
+//               </div>
+//             ))}
+//             <button type="button" onClick={addExperience}>
+//               Add Experience
+//             </button>
+//           </div>
+
+//           {/* Time Slots */}
+//           <div className="profile__timeslots">
+//             <label>Time Slots:</label>
+//             {renderTimeSlots()}
+//             <button type="button" onClick={addTimeSlot}>
+//               Add Time Slot
+//             </button>
+//           </div>
+
+//           {/* Address */}
+//           <div className="profile__address">
+//             <label htmlFor="address.line1">Address Line 1:</label>
+//             <input
+//               type="text"
+//               id="address.line1"
+//               name="address.line1"
+//               value={formData.address.line1}
+//               onChange={handleInputChange}
+//               required
+//             />
+
+//             <label htmlFor="address.line2">Address Line 2:</label>
+//             <input
+//               type="text"
+//               id="address.line2"
+//               name="address.line2"
+//               value={formData.address.line2}
+//               onChange={handleInputChange}
+//             />
+
+//             <CountrySelect
+//               value={formData.address.country}
+//               onChange={handleCountryChange}
+//               valueType="name"
+//               labelType="full"
+//               required
+//             />
+//             <StateSelect
+//               country={formData.address.country}
+//               value={formData.address.state}
+//               onChange={handleStateChange}
+//               valueType="name"
+//               labelType="full"
+//               required
+//             />
+//             <CitySelect
+//               country={formData.address.country}
+//               state={formData.address.state}
+//               value={formData.address.city}
+//               onChange={handleCityChange}
+//               valueType="name"
+//               labelType="full"
+//               required
+//             />
+
+//             <label htmlFor="address.pincode">Pincode:</label>
+//             <input
+//               type="text"
+//               id="address.pincode"
+//               name="address.pincode"
+//               value={formData.address.pincode}
+//               onChange={handleInputChange}
+//               required
+//             />
+//           </div>
+
+//           {/* Bio */}
+//           <div className="profile__bio">
+//             <label htmlFor="bio">Bio:</label>
+//             <textarea
+//               id="bio"
+//               name="bio"
+//               value={formData.bio}
+//               onChange={handleInputChange}
+//               required
+//             />
+//           </div>
+
+//           {/* About */}
+//           <div className="profile__about">
+//             <label htmlFor="about">About:</label>
+//             <textarea
+//               id="about"
+//               name="about"
+//               value={formData.about}
+//               onChange={handleInputChange}
+//               required
+//             />
+//           </div>
+
+//           {/* Submit */}
+//           <div className="profile__submit">
+//             <button type="submit" disabled={loading}>
+//               {loading ? "Updating..." : "Update Profile"}
+//             </button>
+//             {profileUpdateSuccess && (
+//               <span className="profile__success">
+//                 <FaCheckCircle />
+//                 Profile updated successfully!
+//               </span>
+//             )}
+//           </div>
+//         </div>
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default Profile;
 
 // import { useEffect, useState } from "react";
 // import Cropper from "react-easy-crop";

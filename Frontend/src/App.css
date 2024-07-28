@@ -11,9 +11,9 @@ body{
   background:#FFFEF8;
 }
 
-.swiper-pagination-bullet {
-  width: 12px !important;
-  height: 12px !important;
+/* .swiper-pagination-bullet {
+  width: 100px !important;
+  height: 20px !important;
   border: 1px solid #181a1e !important;
   opacity: 100% !important;
   background:  #fff !important;
@@ -36,12 +36,12 @@ body{
 }
 
 .swiper-slide.swiper-slide-next h4, .swiper-slide.swiper-slide-next p{
-  color: #fff !important;
+  color: #ffffff !important;
 }
 
 .swiper-pagination{
   top: 90% !important;
-}
+} */
 
 .sticky__header{
   width: 100%;
@@ -193,5 +193,29 @@ body{
 
 .rotate-close {
   transform: rotate(0deg);
+}
+
+.time-slot {
+  display: inline-block;
+  padding: 5px 10px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.available {
+  background-color: green;
+  color: white;
+}
+
+.unavailable {
+  background-color: grey;
+  color: white;
+  pointer-events: none;
+}
+
+.selected {
+  background-color: blue;
+  color: white;
 }
 
