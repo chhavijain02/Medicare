@@ -1,6 +1,6 @@
 // This file is used to design Doctor Detail's Page
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import startIcon from '../../assets/images/Star.png';
 import DoctorAbout from './DoctorAbout';
 import Feedback from './Feedback';
@@ -16,6 +16,19 @@ const DoctorDetails = () => {
   const [tab, setTab] = useState('about');
 
   const {id} = useParams();
+  const [liveStats, setLiveStats] = useState(null);
+
+  useEffect(() => {
+    setLiveStats(null);
+  }, [id]);
+
+  const handleReviewsChange = (list) => {
+    const count = list.length;
+    const avg = count
+        ? list.reduce((sum, r) => sum + (r.rating || 0), 0) / count
+        : 0;
+    setLiveStats({ count, avg });
+  };
 
   const {
     data:doctor, 
@@ -37,6 +50,8 @@ const DoctorDetails = () => {
     ticketPrice,
     photo,
   } = doctor;
+  const shownRating = liveStats ? liveStats.avg : averageRating;
+  const shownCount = liveStats ? liveStats.count : totalRating;
 
   return (
     <section>
@@ -64,9 +79,9 @@ const DoctorDetails = () => {
                 </h3>
                 <div className='flex items-center gap-[6px]'>
                   <span className='flex items-center gap-[6px] text-[14px] leading-5 lg:text-[16px] lg:leading-7 font-semibold text-headingColor'>
-                    <img src={startIcon} alt="" /> {averageRating? averageRating.toFixed(1):0.0}
+                    <img src={startIcon} alt="" /> {shownRating ? shownRating.toFixed(1) : "0.0"}
                   </span>
-                  <span className='text-[14px] leading-5 lg:text-[16px] lg:leading-7 font-[400] text-textColor'>({totalRating})</span>
+                  <span className='text-[14px] leading-5 lg:text-[16px] lg:leading-7 font-[400] text-textColor'>({shownCount})</span>
                 </div>
 
                 <p className='text__para text-[14px] leading-6 md:text-[15px] lg:max-w-[390px]'>
@@ -106,7 +121,8 @@ const DoctorDetails = () => {
 
               {tab == "feedback" && (
                 <Feedback
-                  doctorId={id}
+                    doctorId={id}
+                    onReviewsChange={handleReviewsChange}
                 />
               )}
             </div>
