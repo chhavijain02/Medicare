@@ -4,10 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import uploadImageToCloudinary from "../utils/uploadCloudinary";
 import { BASE_URL } from "../config";
 import { toast } from "react-toastify";
+import { FaCheck, FaCheckCircle } from "react-icons/fa";
 import HashLoader from "react-spinners/HashLoader";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "../utils/cropImage";
-import { FaCheck } from "react-icons/fa";
 import "../Login.css";
 
 const Signup = () => {
@@ -18,6 +18,7 @@ const Signup = () => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [cropping, setCropping] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -37,6 +38,7 @@ const Signup = () => {
 
   const handleFileInputChange = async (event) => {
     const file = event.target.files[0];
+    if (!file) return;
     const imageDataUrl = URL.createObjectURL(file);
     setPreviewURL(imageDataUrl);
     setSelectedFile(file);
@@ -51,19 +53,33 @@ const Signup = () => {
   );
 
   const handleCrop = async () => {
+    setUploading(true);
     try {
       const croppedImage = await getCroppedImg(previewURL, croppedArea);
       setPreviewURL(URL.createObjectURL(croppedImage));
       const data = await uploadImageToCloudinary(croppedImage);
-      setFormData({ ...formData, photo: data.url });
+      if (!data || !data.url) {
+        toast.error("Photo upload failed, please try again");
+        return;
+      }
+      setFormData((prev) => ({ ...prev, photo: data.url }));
       setCropping(false);
     } catch (err) {
       console.error(err);
+      toast.error("Could not process the photo, please try again");
+    } finally {
+      setUploading(false);
     }
   };
 
   const submitHandler = async (event) => {
     event.preventDefault();
+
+    if (uploading) {
+      toast.info("Photo is still uploading, please wait a moment");
+      return;
+    }
+
     setLoading(true);
 
     if (!formData.photo) {
@@ -224,8 +240,10 @@ const Signup = () => {
                     className="rounded-lg overflow-hidden"
                   />
                   <button
-                    onClick={handleCrop}
-                    className="absolute bottom-4 right-4 bg-blue-500 rounded-full p-2 text-white flex items-center justify-center"
+                      type="button"
+                      onClick={handleCrop}
+                      disabled={uploading}
+                      className="absolute bottom-4 right-4 bg-blue-500 rounded-full p-2 text-white flex items-center justify-center disabled:opacity-60"
                   >
                     <FaCheck />
                   </button>
@@ -234,7 +252,7 @@ const Signup = () => {
 
               <div className="mt-6 lg:mt-8">
                 <button
-                  disabled={loading}
+                    disabled={loading || uploading}
                   type="submit"
                   className={`w-full text-white text-[18px] leading-[30px] rounded-lg px-4 py-3 transition-all duration-300 ${
                     loading || signupSuccess
@@ -243,9 +261,11 @@ const Signup = () => {
                   } flex justify-center items-center`}
                 >
                   {signupSuccess ? (
-                    <FaCheckCircle size={25} color="#fff" />
+                      <FaCheckCircle size={25} color="#fff" />
+                  ) : uploading ? (
+                      "Uploading photo..."
                   ) : (
-                    "Sign Up"
+                      "Sign Up"
                   )}
                 </button>
               </div>

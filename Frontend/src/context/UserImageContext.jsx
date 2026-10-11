@@ -35,7 +35,7 @@ export const UserImageProvider = ({ children }) => {
   
   const fetchProfilePhoto = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/v1/doctors/profile/me');
+      const response = await fetch('http://localhost:5001/api/v1/doctors/profile/me');
       const data = await response.json();
       setProfilePhoto(data.photo); 
     } catch (error) {

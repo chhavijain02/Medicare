@@ -3,6 +3,14 @@ import Booking from "../models/BookingSchema.js";
 
 export const updateDoctor = async (req, res) => {
   const id = req.params.id;
+  if (req.body.ticketPrice !== undefined && req.body.ticketPrice !== "") {
+    const price = Number(req.body.ticketPrice);
+    if (!Number.isFinite(price) || price < 0) {
+      return res
+          .status(400)
+          .json({ success: false, message: "Ticket price cannot be negative" });
+    }
+  }
   try {
     const updatedDoctor = await Doctor.findByIdAndUpdate(
       id,
