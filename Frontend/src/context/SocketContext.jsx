@@ -9,7 +9,7 @@
 //   const [socket, setSocket] = useState(null);
 
 //   useEffect(() => {
-//     const newSocket = io('http://localhost:5000'); 
+//     const newSocket = io('http://localhost:5001'); 
 //     setSocket(newSocket);
 
 //     return () => newSocket.close();
@@ -40,7 +40,7 @@ export const SocketProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io('http://localhost:5001');
     newSocket.on('connect', () => {
       setSocket(newSocket);
       setLoading(false);

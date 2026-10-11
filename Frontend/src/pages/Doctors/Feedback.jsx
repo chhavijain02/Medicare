@@ -78,7 +78,7 @@ const Feedback = ({ doctorId }) => {
     // Fetch all reviews for the specific doctor when the component mounts
     const fetchReviews = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/v1/reviews/${doctorId}`);
+        const response = await axios.get(`http://localhost:5001/api/v1/reviews/${doctorId}`);
         if (response.data.success) {
             console.log("Successfull fetching");
             console.log(response.data.data);

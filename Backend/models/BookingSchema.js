@@ -1,4 +1,3 @@
-import { Select } from "@mui/material";
 import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema(

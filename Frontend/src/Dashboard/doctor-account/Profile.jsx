@@ -158,6 +158,15 @@ const handleCropConfirm = async () => {
 
 const updateProfileHandler = async (e) => {
   e.preventDefault();
+  const price = Number(formData.ticketPrice);
+  if (
+      formData.ticketPrice !== "" &&
+      formData.ticketPrice != null &&
+      (!Number.isFinite(price) || price < 0)
+  ) {
+    toast.error("Ticket price cannot be negative");
+    return;
+  }
   setLoading(true);
   try {
     let updatedFormData = { ...formData };
@@ -391,6 +400,7 @@ const addTimeSlot = (e) => {
       <p className="form__label">Ticket Price*</p>
       <input
         type="number"
+        min="0"
         name="ticketPrice"
         value={formData.ticketPrice}
         onChange={handleInputChange}
