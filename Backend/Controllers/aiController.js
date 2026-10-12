@@ -412,20 +412,6 @@ You MUST return valid JSON in this exact structure:
       summaryResult = fallbackSummary(reviews);
     }
 
-        if (!summaryResult.summary) {
-          throw new Error('Empty summary returned');
-        }
-
-        console.log('✅ Gemini review summary completed for doctor:', doctorId);
-      } catch (parseError) {
-        console.error('Gemini returned invalid summary JSON, falling back to rule-based:', parseError.message);
-        summaryResult = fallbackSummary(reviews);
-      }
-    } else {
-      console.log('All Gemini models unavailable, using rule-based review summary');
-      summaryResult = fallbackSummary(reviews);
-    }
-
     res.status(200).json({
       success: true,
       message: 'Review summary generated',
