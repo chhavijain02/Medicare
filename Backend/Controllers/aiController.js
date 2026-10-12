@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import Anthropic from '@anthropic-ai/sdk';
 import Doctor from '../models/DoctorSchema.js';
 import Review from '../models/ReviewSchema.js';
+import { createHash } from 'crypto';
 
 // Available specializations in the system
 const AVAILABLE_SPECIALIZATIONS = [
@@ -328,6 +329,9 @@ const fallbackSummary = (reviews) => {
   };
 };
 
+// Remembers the last AI summary per doctor (cleared when the server restarts)
+const summaryCache = new Map();
+
 // Summarize all reviews for a given doctor
 export const summarizeDoctorReviews = async (req, res) => {
   try {
@@ -360,6 +364,14 @@ export const summarizeDoctorReviews = async (req, res) => {
       .map((r, i) => `Review ${i + 1} (Rating: ${r.rating}/5): "${(r.reviewText || '').trim()}"`)
       .join('\n');
 
+    // Same reviews => same fingerprint => reuse the saved summary
+    const fingerprint = createHash('sha1').update(reviewsForPrompt).digest('hex');
+    const cached = summaryCache.get(String(doctorId));
+    if (cached && cached.fingerprint === fingerprint) {
+      console.log('Using cached review summary for doctor:', doctorId);
+      return res.status(200).json(cached.payload);
+    }
+
     const prompt = `You are a healthcare review analyst. Read these patient reviews for a doctor and produce a fair, balanced summary that helps prospective patients decide.
 
 RULES:
@@ -383,6 +395,7 @@ You MUST return valid JSON in this exact structure:
 }`;
 
     let summaryResult;
+    let usedAI = false;
     const aiResponse = await getAIResponse(prompt);
 
     if (aiResponse) {
@@ -403,6 +416,7 @@ You MUST return valid JSON in this exact structure:
         }
 
         console.log('✅ AI review summary completed for doctor:', doctorId);
+        usedAI = true;
       } catch (parseError) {
         console.error('AI returned invalid summary JSON, falling back to rule-based:', parseError.message);
         summaryResult = fallbackSummary(reviews);
@@ -412,7 +426,7 @@ You MUST return valid JSON in this exact structure:
       summaryResult = fallbackSummary(reviews);
     }
 
-    res.status(200).json({
+    const payload = {
       success: true,
       message: 'Review summary generated',
       data: {
@@ -420,7 +434,14 @@ You MUST return valid JSON in this exact structure:
         count: reviews.length,
         ...summaryResult
       }
-    });
+    };
+
+    // Only remember real AI summaries, so the AI is retried if it failed this time
+    if (usedAI) {
+      summaryCache.set(String(doctorId), { fingerprint, payload });
+    }
+
+    res.status(200).json(payload);
 
   } catch (err) {
     console.error('Error in summarizeDoctorReviews:', err);
