@@ -305,6 +305,7 @@
 
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import DoctorCard from "./../../components/Doctors/DoctorCard";
 import Testimonial from "../../components/Testimonial/Testimonial";
 import useFetchData from "./../../hooks/useFetchData";
@@ -313,6 +314,7 @@ import FilterModal from "./../../components/Find/FilterModal.jsx";
 import { FaFilter } from "react-icons/fa";
 
 const Doctors = () => {
+  const location = useLocation();
   const [query, setQuery] = useState('');
   const [specializations, setSpecializations] = useState([]);
   const [minPrice, setMinPrice] = useState(0);
@@ -320,6 +322,18 @@ const Doctors = () => {
   const [debounceQuery, setDebounceQuery] = useState('');
   const [debounceSpecializations, setDebounceSpecializations] = useState([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
+
+  // Check URL params on mount (from symptom checker)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const urlSpecializations = searchParams.get('specializations');
+
+    if (urlSpecializations) {
+      const specs = urlSpecializations.split(',');
+      setSpecializations(specs);
+      setDebounceSpecializations(specs);
+    }
+  }, [location.search]);
 
   const handleSearch = () => {
     setDebounceQuery(query.trim());
@@ -401,7 +415,7 @@ const Doctors = () => {
       {showFilterModal && (
         <FilterModal
           showFilterModal
-          specializations={["Cardiologist","Surgeon","Dermatologist","Gynecologist","Psychiatrist", "Neurologist", "Pediatrics","Physician","Dentist","Hematologist","Nephrologist"]}
+          specializations={["Cardiologist","Surgeon","Orthopedician","Dermatologist","Gynecologist","Psychiatrist", "Neurologist", "Pediatrics","Physician","Dentist","Hematologist","Nephrologist"]}
           onApply={handleApplyFilters}
           onClose={() => setShowFilterModal(false)}
         />

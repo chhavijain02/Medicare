@@ -11,8 +11,11 @@ const navLinks = [
   },
   {
     path: "/doctors",
-
     display: "Find a Doctor",
+  },
+  {
+    path: "/symptom-checker",
+    display: "AI Symptom Checker",
   },
   {
     path: "/services",

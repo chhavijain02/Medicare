@@ -40,9 +40,17 @@ const Home = () => {
                   quibusdam enim nemo dolorem nostrum officia perspiciatis sint
                   eius tenetur, amet accusantium error odit?
                 </p>
-                <Link to="/doctors" className="btn">
-                  Request an Appointment
-                </Link>
+                <div className="flex gap-4 items-center">
+                  <Link to="/doctors" className="btn">
+                    Request an Appointment
+                  </Link>
+                  <Link
+                    to="/symptom-checker"
+                    className="btn bg-[#f39c12] hover:bg-[#d68910] text-white"
+                  >
+                    AI Symptom Checker
+                  </Link>
+                </div>
               </div>
 
               {/* ---------------- hero counter ------------- */}

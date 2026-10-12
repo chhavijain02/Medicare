@@ -28,6 +28,11 @@ const reviewSchema = new mongoose.Schema(
 );
 
 reviewSchema.pre(/^find/, function (next) {
+  // Skip populate if explicitly disabled via option
+  if (this.getOptions().skipPopulate) {
+    return next();
+  }
+
   this.populate({
     path: "user",
     select: "name photo",
