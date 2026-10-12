@@ -64,6 +64,7 @@ import { useState, useEffect, useContext } from 'react';
 import { formateDate } from '../../utils/formateDate';
 import { AiFillStar } from 'react-icons/ai';
 import FeedbackForm from './FeedbackForm';
+import ReviewSummary from './ReviewSummary';
 import { useSocket } from '../../context/SocketContext';
 import { authContext } from '../../context/authContext';
 import axios from 'axios';
@@ -77,6 +78,7 @@ const Feedback = ({ doctorId, onReviewsChange }) => {
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
   const [userReview, setUserReview] = useState(null);
+  const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
   const socket = useSocket();
   const { user } = useContext(authContext);
 
@@ -124,6 +126,9 @@ const Feedback = ({ doctorId, onReviewsChange }) => {
           );
           setUserReview(existingUserReview || null);
         }
+
+        // Refresh AI summary to stay in sync with review changes
+        setSummaryRefreshKey(prev => prev + 1);
       };
 
       socket.on('updateReviews', handleUpdate);
@@ -173,6 +178,14 @@ const Feedback = ({ doctorId, onReviewsChange }) => {
             <h4 className='text-[20px] leading-[30px] font-bold text-headingColor mb-[30px]'>
               All reviews ({totalRating})
             </h4>
+
+            {totalRating > 0 && (
+              <ReviewSummary
+                doctorId={doctorId}
+                reviewsCount={totalRating}
+                refreshTrigger={summaryRefreshKey}
+              />
+            )}
 
             {currentReviews && currentReviews.length > 0 ? (
                 currentReviews.map((review, index) => (
