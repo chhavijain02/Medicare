@@ -3,6 +3,7 @@ import { BASE_URL } from '../../config';
 import { AiFillCheckCircle, AiOutlineInfoCircle } from 'react-icons/ai';
 import { FiRefreshCw } from 'react-icons/fi';
 import { BsStars } from 'react-icons/bs';
+import { LANGUAGES } from '../../utils/languages';
 
 const sentimentStyles = {
   "Overwhelmingly Positive": "bg-green-100 text-green-700",
@@ -15,6 +16,7 @@ const ReviewSummary = ({ doctorId, reviewsCount, refreshTrigger }) => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [language, setLanguage] = useState('en');
 
   const fetchSummary = async () => {
     try {
@@ -22,6 +24,7 @@ const ReviewSummary = ({ doctorId, reviewsCount, refreshTrigger }) => {
       const res = await fetch(`${BASE_URL}/ai/doctor/${doctorId}/summarize-reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language }),
       });
       const result = await res.json();
 
@@ -48,7 +51,7 @@ const ReviewSummary = ({ doctorId, reviewsCount, refreshTrigger }) => {
     setSummary(null);
     fetchSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [doctorId, refreshTrigger]);
+  }, [doctorId, refreshTrigger, language]);
 
   if (hidden) return null;
 
@@ -77,6 +80,18 @@ const ReviewSummary = ({ doctorId, reviewsCount, refreshTrigger }) => {
               </h4>
             </div>
             <div className="flex items-center gap-2">
+              <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="rounded border border-solid border-[#0066ff34] bg-white px-2 py-1 text-[12px] text-headingColor"
+                  aria-label="Summary language"
+              >
+                {LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.label}
+                    </option>
+                ))}
+              </select>
               <span
                 className={`px-3 py-1 rounded-full text-[12px] font-[600] ${
                   sentimentStyles[summary.overallSentiment] || sentimentStyles["Mixed"]

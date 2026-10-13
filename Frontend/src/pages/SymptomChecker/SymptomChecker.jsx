@@ -4,12 +4,14 @@ import { BASE_URL } from '../../config';
 import { toast } from 'react-toastify';
 import HashLoader from 'react-spinners/HashLoader';
 import DoctorCard from '../../components/Doctors/DoctorCard';
+import { LANGUAGES } from '../../utils/languages';
 import { AiOutlineWarning, AiOutlineCheckCircle, AiOutlineAlert } from 'react-icons/ai';
 
 const SymptomChecker = () => {
   const [symptoms, setSymptoms] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
+  const [language, setLanguage] = useState('en');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const navigate = useNavigate();
@@ -38,6 +40,7 @@ const SymptomChecker = () => {
           symptoms: symptoms.trim(),
           age: age ? parseInt(age) : undefined,
           gender: gender || undefined,
+          language,
         }),
       });
 
@@ -161,6 +164,23 @@ const SymptomChecker = () => {
                     <option value="other">Other</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="mb-5">
+                <label className="text-headingColor font-semibold text-[16px] leading-7 mb-2 block">
+                  Reply language
+                </label>
+                <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    className="w-full px-4 py-3 border border-solid border-[#0066ff34] focus:outline outline-primaryColor rounded-md"
+                >
+                  {LANGUAGES.map((l) => (
+                      <option key={l.code} value={l.code}>
+                        {l.label}
+                      </option>
+                  ))}
+                </select>
               </div>
 
               <button

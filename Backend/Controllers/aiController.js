@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import Doctor from '../models/DoctorSchema.js';
 import Review from '../models/ReviewSchema.js';
 import { createHash } from 'crypto';
+import { LANGUAGES } from './assistantController.js';
 
 // Available specializations in the system
 const AVAILABLE_SPECIALIZATIONS = [
@@ -31,7 +32,7 @@ const getGeminiModel = async (prompt) => {
   if (!apiKey || apiKey === 'your_gemini_api_key_here') return null;
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-flash-latest"];
+  const modelsToTry = ["gemini-flash-latest","gemini-3.8-flash"];
 
   for (const modelName of modelsToTry) {
     try {
@@ -47,7 +48,7 @@ const getGeminiModel = async (prompt) => {
       console.log(`✅ Using Gemini model: ${modelName}`);
       return result.response.text();
     } catch (error) {
-      console.log(`⚠️ ${modelName} failed (${error.message.substring(0, 50)}), trying next...`);
+      console.log(`⚠️ ${modelName} failed: ${error.message}`);
       continue;
     }
   }
@@ -185,7 +186,7 @@ const fallbackAnalysis = (symptoms, age, gender) => {
 // Main symptom analysis controller
 export const analyzeSymptoms = async (req, res) => {
   try {
-    const { symptoms, age, gender } = req.body;
+    const { symptoms, age, gender, language = 'en' } = req.body;
 
     // Validation
     if (!symptoms || symptoms.trim().length === 0) {
@@ -202,6 +203,7 @@ export const analyzeSymptoms = async (req, res) => {
       });
     }
 
+    const languageName = LANGUAGES[language] || 'English';
     let analysisResult;
 
     // Try to use Google Gemini API with automatic model fallback
@@ -212,6 +214,7 @@ RULES:
 2. Provide a supportive, clear 2-3 sentence analysis of what might be happening.
 3. Assess urgency as one of: "routine" (standard visit), "urgent" (see doctor within 24-48 hours), or "emergency" (seek immediate emergency care).
 4. Suggest 2-4 safe, helpful self-care tips.
+5. Write "analysis" and "homeCareTips" in ${languageName}. Keep every value in "recommendedSpecializations" exactly as written in the English list, and keep "urgency" as one of the English words routine, urgent or emergency.
 
 Patient Information:
 - Symptoms: "${symptoms}"
@@ -336,6 +339,8 @@ const summaryCache = new Map();
 export const summarizeDoctorReviews = async (req, res) => {
   try {
     const { doctorId } = req.params;
+    const languageName = LANGUAGES[req.body?.language] || 'English';
+    const cacheKey = `${doctorId}:${languageName}`;
 
     if (!doctorId) {
       return res.status(400).json({
@@ -366,7 +371,7 @@ export const summarizeDoctorReviews = async (req, res) => {
 
     // Same reviews => same fingerprint => reuse the saved summary
     const fingerprint = createHash('sha1').update(reviewsForPrompt).digest('hex');
-    const cached = summaryCache.get(String(doctorId));
+    const cached = summaryCache.get(cacheKey);
     if (cached && cached.fingerprint === fingerprint) {
       console.log('Using cached review summary for doctor:', doctorId);
       return res.status(200).json(cached.payload);
@@ -381,6 +386,7 @@ RULES:
 4. Provide 2-4 pros and 1-3 cons (cons can be empty if none are mentioned).
 5. sentimentScore must be an integer 0-100 representing the overall positivity.
 6. overallSentiment must be exactly one of: "Overwhelmingly Positive", "Mostly Positive", "Mixed", "Needs Improvement".
+7. Write "summary", "pros" and "cons" in ${languageName}. Keep "overallSentiment" exactly as one of the English labels above.
 
 PATIENT REVIEWS:
 ${reviewsForPrompt}
@@ -438,7 +444,7 @@ You MUST return valid JSON in this exact structure:
 
     // Only remember real AI summaries, so the AI is retried if it failed this time
     if (usedAI) {
-      summaryCache.set(String(doctorId), { fingerprint, payload });
+      summaryCache.set(cacheKey, { fingerprint, payload });
     }
 
     res.status(200).json(payload);
